@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "593490648668",
+    "project_id": "mnetal-health-app",
+    "storage_bucket": "mnetal-health-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:593490648668:android:a74eb08a359d9eec161099",
+        "android_client_info": {
+          "package_name": "com.example.mental.health.app.mental_health_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "593490648668-qicsaj1780oeneqq3ecba1ms9odlscf1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsaFJgocmZcB_iL2pg3nAEb7aGsPsHIx4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "593490648668-qicsaj1780oeneqq3ecba1ms9odlscf1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
