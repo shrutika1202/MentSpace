@@ -25,7 +25,7 @@ class CreateEntry extends StatefulWidget {
 class _CreateEntryState extends State<CreateEntry> {
   TextEditingController textarea = TextEditingController();
   TextEditingController textTitle = TextEditingController();
-  List<String> mood = ['great','good','ok','bad','awful'];
+  List<String> mood = ['great','good','ok','bad','tired'];
   String selectedMood = '';
   final emojiSelected = [100];
 
@@ -169,6 +169,9 @@ class _CreateEntryState extends State<CreateEntry> {
                         borderSide: BorderSide(width: 3, color: Colors.white)
                     )
                   ),
+                  onChanged: (value){
+                    setState(() {});
+                  },
                 ),
               ),
             ),
@@ -200,6 +203,9 @@ class _CreateEntryState extends State<CreateEntry> {
                           borderSide: BorderSide(width: 3, color: Colors.white)
                       )
                   ),
+                  onChanged: (value){
+                    setState(() {});
+                  },
                 ),
               ),
             ),
@@ -220,7 +226,9 @@ class _CreateEntryState extends State<CreateEntry> {
                   color: Colors.white,
                 ),
               ),
-              onPressed: (){
+              onPressed: (emojiSelected[0] == 100 || textTitle.text.length < 2 || textarea.text.length < 2)
+                  ? null
+                  : (){
                 print('------- title from create entry : ${textTitle.text.length == 0 ? widget.title : textTitle.text}');
                 Navigator.push(context, new MaterialPageRoute(
                     builder: (context) => new ChooseImage(

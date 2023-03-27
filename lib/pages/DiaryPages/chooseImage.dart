@@ -1,14 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cross_file_image/cross_file_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:mental_health_app/main.dart';
+import 'package:mental_health_app/PageRouting.dart';
 import 'package:mental_health_app/pages/DiaryPages/diary.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 import 'package:mental_health_app/pages/DiaryPages/viewEntry.dart';
+
+import '../ExtraFiles/AccountOperations.dart';
+
+final user = FirebaseAuth.instance.currentUser;
 
 class ChooseImage extends StatefulWidget {
   // const ChooseImage({Key? key}) : super(key: key);
@@ -147,10 +153,12 @@ class _ChooseImageState extends State<ChooseImage> {
                       color: Colors.grey[600],
                     ),
                     onTap: ()async{
+                      print('image from choose image b4 : ${imageFile}');
                       var picture = await ImagePicker().pickImage(source: ImageSource.gallery);
                       setState(() {
                         imageFile = picture;
                       });
+                      print('image from choose image after : ${imageFile}');
                     },
                   )
               ),
@@ -206,6 +214,18 @@ class _ChooseImageState extends State<ChooseImage> {
                   isImageUpdated = true;
                 });
 
+                if(isImageUpdated){
+                  Fluttertoast.showToast(
+                      msg: "Image Updated successfully",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 16.0
+                  );
+                }
+
                 print('--------- url after update : ${url}');
                 Navigator.of(context).pushAndRemoveUntil(
                     new MaterialPageRoute(
@@ -221,7 +241,7 @@ class _ChooseImageState extends State<ChooseImage> {
                         )),
                         (Route<dynamic> route) => false);
               } :
-                  ()async{
+                  imageFile == null ? null : ()async{
                 if(!isEntryAdded){
                   showDialog(
                     context: context,
@@ -248,9 +268,13 @@ class _ChooseImageState extends State<ChooseImage> {
                     'content': widget.content,
                     'creationTime': creation_date,
                     'title': widget.title,
-                    'mood': widget.mood
+                    'mood': widget.mood,
+                    'user': user?.email,
                   });
                 }
+
+                //update diary status on profile
+                updateStatus('journal', 1);
 
                 setState(() {
                   isEntryAdded = true;
@@ -258,7 +282,7 @@ class _ChooseImageState extends State<ChooseImage> {
 
                 Navigator.of(context).pushAndRemoveUntil(
                     new MaterialPageRoute(
-                        builder: (context) => new MyApp(pageIndex: 3,isSuccess: true, successMsg: 'new entry added !',)),
+                        builder: (context) => new PageRouting(pageIndex: 3,isSuccess: true, successMsg: 'new entry added !',)),
                         (Route<dynamic> route) => false);
               },
             ),

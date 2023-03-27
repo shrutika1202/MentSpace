@@ -1,16 +1,20 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-final db = FirebaseFirestore.instance;
+import '../ExtraFiles/AccountOperations.dart';
 
-Future<void> updateTask(Uid,int index,bool exp, field) async{
+final db = FirebaseFirestore.instance;
+final user = FirebaseAuth.instance.currentUser;
+
+Future<void> updateTask(String task_name, int index, bool exp, field) async{
   var taskList;
   print('------------ field : ${field}');
   print('----------- value : ${exp}');
 
-  await db.collection('anonymous_users')
-      .where('uid', isEqualTo: Uid)
+  await db.collection('users')
+      .where("${user?.isAnonymous == true ? 'anon_uid' : 'email'}", isEqualTo: user?.isAnonymous == true ? user?.uid : user?.email)
       .get()
       .then((value){
     value.docs.forEach((element){
@@ -18,11 +22,55 @@ Future<void> updateTask(Uid,int index,bool exp, field) async{
       taskList = element['tasks'];
       taskList[index]['${field}'] = exp;
       print('----------- taskList : ${taskList}');
-      db.collection('anonymous_users').doc(Uid).update({
+      db.collection('users').doc(element.id).update({
         'tasks': taskList,
       });
     });
   });
+
+  if(field == 'isFav'){
+    // add song ID in favTasks field of user collection
+    db.collection('users').get().then((value){
+      value.docs.forEach((element) {
+        try{
+          if(element['email'] == user?.email){
+            var favList = element['favTasks'];
+            print('fav task list : ${favList}');
+            print(favList.indexOf(task_name));
+
+            // when liked
+            if(exp == true){
+              print('favList from operation user : ${favList.length}');
+              if(favList.indexOf(task_name) == -1){
+                favList.add(task_name);
+              }
+            }else{
+              //when unliked
+              // id -> task name
+              favList.removeWhere((item) => item == task_name);
+            }
+
+            var key = 'favTasks';
+            var val = favList;
+            db.collection('users').doc(element.id).update({
+              key: val,
+            });
+          }
+        }catch(e){}
+      });
+    });
+  }
+
+  if(field == 'isCompleted' && user?.isAnonymous == false){
+    //update task status on profile
+    if(exp == true){
+      updateStatus('tasks', 1);
+    }
+    if(exp == false){
+      updateStatus('tasks', -1);
+    }
+  }
+
 }
 
 Future<bool> deleteTask(Uid,int index) async{
@@ -30,8 +78,8 @@ Future<bool> deleteTask(Uid,int index) async{
   var isDeleted = false;
 
   print('inside delete task');
-  await db.collection('anonymous_users')
-      .where('uid', isEqualTo: Uid)
+  await db.collection('users')
+      .where("${user?.isAnonymous == true ? 'anon_uid' : 'email'}", isEqualTo: user?.isAnonymous == true ? user?.uid : user?.email)
       .get()
       .then((value){
     value.docs.forEach((element){
@@ -41,8 +89,7 @@ Future<bool> deleteTask(Uid,int index) async{
       if(taskList[index]['isCompleted']){
         // taskList[index]['isCompleted'];
         taskList.removeAt(index);
-        print('----------- taskList from deleteTask : ${taskList}');
-        db.collection('anonymous_users').doc(Uid).update({
+        db.collection('users').doc(element.id).update({
           'tasks': taskList,
         });
         isDeleted = true;

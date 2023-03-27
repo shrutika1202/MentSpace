@@ -86,7 +86,9 @@ class CustomSearchDelegate extends SearchDelegate {
                   name: '${dict[result]}',
                   singer: '${dict[result]['singer']}',
                   image: '${dict[result]['image']}',
-                  isFav: dict[result]['isFav'],
+                  favSongsList: dict[result]['favSongs'],
+                  url: dict[result]['url'],
+                  Songarray: dict[result]['array'],
                 ))
             );
           },
@@ -149,7 +151,9 @@ class CustomSearchDelegate extends SearchDelegate {
                   name: '${result}',
                   singer: '${dict[result]['singer']}',
                   image: '${dict[result]['image']}',
-                  isFav: dict[result]['isFav'],
+                  favSongsList: dict[result]['favSongs'],
+                  url: dict[result]['url'],
+                  Songarray: dict[result]['array'],
                 ))
             );
           },

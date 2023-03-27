@@ -1,15 +1,40 @@
 
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'AccountOperations.dart';
+
 final db = FirebaseFirestore.instance;
+final user = FirebaseAuth.instance.currentUser;
+var Uinfo;
+
+// get user data
+Future<HashMap<String, dynamic>> getEventsFromFirestore() async {
+  CollectionReference ref = FirebaseFirestore.instance.collection('users');
+  QuerySnapshot eventsQuery = await ref
+      .where("email", isEqualTo: user?.email)
+      .get();
+
+  HashMap<String, dynamic> eventsHashMap = new HashMap<String, dynamic>();
+  eventsQuery.docs.forEach((element) {
+    eventsHashMap.addAll({'uname': element['uname'], 'avatar': element['avatar']});
+  });
+
+  Uinfo = eventsHashMap;
+
+  return eventsHashMap;
+}
 
 // add mood, recommend songs, recommend tasks
 void rec_user(var id, String mood, var email) async{
   // key -> emotions shown to user , value -> emotions used to recommend
-  var mood_list = {'great': 'happy','good': 'anxiety','ok': 'sad','bad': 'angry','awful': 'disgust'};
+  var mood_list = {'great': 'happy','good': 'anxiety','ok': 'sad','bad': 'angry','tired': 'tired'};
   mood_list.forEach((key, value){
     if(key == mood){
       mood = value;
@@ -21,25 +46,61 @@ void rec_user(var id, String mood, var email) async{
   List songs_list = await recommend_songs(mood);
 
   //add mood,tasks to new user doc
-  if(email == null){
-    db.collection("anonymous_users").doc(id).set({'mood': mood, 'tasks': tasks_list, 'songs': songs_list, 'uid': id});
-  }else{
-    // if user logged in
-    if(EmailValidator.validate(email.trim())){
-      db.collection('anonymous_users').get().then((value){
-        value.docs.forEach((element) {
-          if(element['email'] == email){
-            db.collection('anonymous_users').doc(element.id).update({
+  if(user?.isAnonymous == true){
+    // for user with anonymous login
+    print('inside if');
+    db.collection('users').get().then((value){
+      value.docs.forEach((element) {
+        print(' uid is : ${user?.uid}');
+        try{
+          if(element['anon_uid'] == user?.uid){
+            db.collection('users').doc(element.id).update({
               'mood': mood,
               'songs': songs_list,
-              'tasks': tasks_list,
-              'email': email,
-              'uid': element.id
+              'tasks': tasks_list
             });
           }
+        }catch(e){
+
+        }
+      });
+    });
+    return;
+  }else{
+    print('mood from check in : ${mood}');
+    // if user logged in
+    if(EmailValidator.validate(email.trim())){
+      db.collection('users').get().then((value){
+        value.docs.forEach((element) {
+          try{
+            if(element['email'] == user?.email){
+              db.collection('users').doc(element.id).update({
+                'mood': mood,
+                'songs': songs_list,
+                'tasks': tasks_list
+              });
+            }
+          }catch(e){}
         });
       });
     }
+
+
+    // on check-in empty the recent songs list
+    db.collection('users').get().then((value){
+      value.docs.forEach((element) {
+        try{
+          if(element['email'] == user?.email){
+            var recentSongs = [];
+            var key = 'recentSongs';
+            var val = recentSongs;
+            db.collection('users').doc(element.id).update({
+              key: val,
+            });
+          }
+        }catch(e){}
+      });
+    });
   }
 }
 
@@ -67,6 +128,19 @@ fetchData(String url) async {
   return response.body;
 }
 
+
+Future<void> downloadURLExample(track_name) async {
+  var url;
+  print('inside download Url');
+  var downloadURL = await FirebaseStorage.instance
+      .ref()
+      .child("songPlaylist/${track_name}.mp3")
+      .getDownloadURL();
+  url = downloadURL;
+  print('>>>>>>>>> url link : ${url}');
+  return url;
+}
+
 // recommend songs
 Future recommend_songs(String mood) async{
   var url = '';
@@ -80,9 +154,60 @@ Future recommend_songs(String mood) async{
   var decoded = jsonDecode(data);
   output = decoded['tracks'];
 
+  print('---------------- Songs : '+output[0]['track_name']);
+
+  // for(int i=0; i<5; i++){
+  //   var cover_url = output[i]['cover_url'];
+  //   output[i].forEach((key, value) async {
+  //     downloadURLExample('track_name');
+  //     var song_url = downloadURLExample(output[i]['track_name']+'-'+output[i]['artist_name']);
+  //     print('----------- title mp3 : '+output[i]['track_name']+'-'+output[i]['artist_name']);
+  //     var li = [cover_url, song_url];
+  //     print('------------ list here : ${li}');
+  //     output[i]['cover_url'] = li;
+  //   });
+  // }
+
   print("----------------------- List of rec songs: ${output}");
 
   return output;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Future getId() async {
+  final user = FirebaseAuth.instance.currentUser;
+  CollectionReference u = db.collection('users');
+  List userId = [];
+
+  final result = await u
+      .where('email', isEqualTo: user?.email)
+      .get();
+  userId = result.docs.map((e) => e.data()).toList();
+
+  // db.collection('users').get().then((value){
+  //   value.docs.forEach((element) {
+  //     if(element['email'] == user?.email){
+  //       id = element.id;
+  //       print('--------- id from check-in after googleSignIn - ${id}');
+  //     }
+  //   });
+  // });
+  print('--------- id from check-in after googleSignIn - ${userId}');
+  print('----------- user email : ${user?.email}');
+  return userId;
+}
+
 
 

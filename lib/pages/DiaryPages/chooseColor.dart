@@ -138,7 +138,9 @@ class _ChooseColorState extends State<ChooseColor> {
                 color: Colors.white,
               ),
             ),
-            onPressed: (){
+            onPressed: selected[0] == 100
+            ? null
+            : (){
               print('----- color from choose color : ${colors[selected[0]][0].runtimeType}');
               print('-------- title from color : ${widget.title != null ? widget.title : null}');
               Navigator.push(context, new MaterialPageRoute(

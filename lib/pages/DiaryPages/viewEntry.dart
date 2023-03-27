@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mental_health_app/PageRouting.dart';
 import 'package:mental_health_app/pages/DiaryPages/chooseImage.dart';
 import 'package:mental_health_app/pages/DiaryPages/diary.dart';
 
@@ -100,11 +101,11 @@ class _viewEntryState extends State<viewEntry> {
     bool isEntryAdded = false;
 
     print('---------- build height : ${onFocus}');
-    return WillPopScope(
-      onWillPop: () async{
-        return false;
-      },
-      child: GestureDetector(
+    // return WillPopScope(
+    //   onWillPop: () async{
+    //     return false;
+    //   },
+      return GestureDetector(
         onTap: (){
           // when clicked anywhere on screen textfield went off focus
           FocusScope.of(context).unfocus();
@@ -123,7 +124,7 @@ class _viewEntryState extends State<viewEntry> {
                 onTap: (){
                   Navigator.of(context).pushAndRemoveUntil(
                       new MaterialPageRoute(
-                          builder: (context) => new MyApp(pageIndex: 3)),
+                          builder: (context) => new PageRouting(pageIndex: 3)),
                           (Route<dynamic> route) => false);
                 },
               ),
@@ -150,13 +151,37 @@ class _viewEntryState extends State<viewEntry> {
               child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(bottomRight: Radius.circular(70)),
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          widget.url,
-                        ),
-                        fit: BoxFit.cover,
-                      )
+                      // image: DecorationImage(
+                      //   image: NetworkImage(
+                      //     widget.url,
+                      //   ),
+                      //   fit: BoxFit.cover,
+                      //
+                      // )
                     ),
+                child: Image.network(
+                  '${widget.url}',
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress){
+                    if(loadingProgress == null){
+                      return child;
+                    }else{
+                      return Center(
+                        child: Text(
+                          'Loading....',
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.grey[500],
+                              letterSpacing: 2
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  // errorBuilder: (context, error, stackTrace){
+                  //   Text('ERROR');
+                  // },
+                ),
                   ),
             ),
           ),
@@ -275,7 +300,7 @@ class _viewEntryState extends State<viewEntry> {
                           });
                           Navigator.of(context).pushAndRemoveUntil(
                               new MaterialPageRoute(
-                                  builder: (context) => new MyApp(pageIndex: 3,isSuccess: true, successMsg: '   entry updated !',)),
+                                  builder: (context) => new PageRouting(pageIndex: 3,isSuccess: true, successMsg: '   entry updated !',)),
                                   (Route<dynamic> route) => false);
                         });
                       },
@@ -286,8 +311,8 @@ class _viewEntryState extends State<viewEntry> {
             ),
           ),
         ),
-      ),
-    );
+      );
+    // );
   }
 }
 

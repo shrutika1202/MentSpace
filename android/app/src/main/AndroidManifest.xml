@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.mental.health.app.mental_health_app">
    <application
-        android:label="mental_health_app"
+        android:label="MentSpace"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

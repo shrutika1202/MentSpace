@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:mental_health_app/pages/DiaryPages/chooseColor.dart';
@@ -28,9 +29,11 @@ Future<void> downloadURLExample(String creationTime) async {
   print('>>>>>>>>> url : ${url}');
 }
 
+final user = FirebaseAuth.instance.currentUser;
+
 class _DiaryPageState extends State<DiaryPage> {
   bool onFocus = false;
-
+  var entryList = [];
   var selectedEntries;
 
   @override
@@ -109,7 +112,9 @@ class _DiaryPageState extends State<DiaryPage> {
             SliverToBoxAdapter(
               child: SingleChildScrollView(
                 child: StreamBuilder(
-                  stream: FirebaseFirestore.instance.collection('DiaryEntries').snapshots(),
+                  stream: FirebaseFirestore.instance.collection('DiaryEntries')
+                      .where('user', isEqualTo: user?.email)
+                      .snapshots(),
                   builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
                     if(!snapshot.hasData){
                       return Center(
@@ -120,7 +125,38 @@ class _DiaryPageState extends State<DiaryPage> {
                       );
                     }
 
-                    return ListView(
+                    try{
+                      entryList = (snapshot.data as QuerySnapshot).docs.isEmpty ? [] : ((snapshot.data as QuerySnapshot).docs);
+                    }catch(e){
+                      entryList = [];
+                    }
+
+                    return entryList.isEmpty
+                        ? Padding(
+                      padding: const EdgeInsets.only(top: 300),
+                      child: Container(
+                        child: Column(
+                          children: [
+                            Text(
+                              'No entries available',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.grey[800]
+                              ),
+                            ),
+                            Text(
+                              ' Start journaling now !!',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey
+                              ),
+                            ),
+                            SizedBox(height: 10,),
+                          ],
+                        ),
+                      ),
+                    )
+                        : ListView(
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       children: snapshot.data!.docs.map((document){
@@ -180,7 +216,7 @@ class _DiaryPageState extends State<DiaryPage> {
                                               )
                                           ),
                                           child: Icon(
-                                              Icons.delete,
+                                            Icons.delete,
                                             size: 19,
                                             color: Colors.grey[700],
                                           ),
@@ -247,17 +283,17 @@ class _DiaryPageState extends State<DiaryPage> {
                           ),
                           onTap: ()async {
                             await downloadURLExample(document['creationTime']);
-                          //  on selecting an entry
+                            //  on selecting an entry
                             Navigator.push(context, new MaterialPageRoute(
                                 builder: (context) => new viewEntry(
-                                  mood: document['mood'],
-                                  id: document.id,
-                                  title: document['title'],
-                                  content: document['content'],
-                                  creationTime: document['creationTime'],
-                                  bg1: document['bg1'],
-                                  bg2: document['bg2'],
-                                  url: url
+                                    mood: document['mood'],
+                                    id: document.id,
+                                    title: document['title'],
+                                    content: document['content'],
+                                    creationTime: document['creationTime'],
+                                    bg1: document['bg1'],
+                                    bg2: document['bg2'],
+                                    url: url
                                 ))
                             );
                           },

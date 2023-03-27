@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,10 @@ import 'package:mental_health_app/pages/TaskPages/taskDesp.dart';
 import 'package:mental_health_app/pages/TaskPages/taskOperations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../DiaryPages/chooseColor.dart';
+import '../HomePage/home.dart';
 
 final db = FirebaseFirestore.instance;
+final user = FirebaseAuth.instance.currentUser;
 
 class TaskPage extends StatefulWidget {
   // const TaskPage({Key? key}) : super(key: key);
@@ -22,25 +25,17 @@ class TaskPage extends StatefulWidget {
   _TaskPageState createState() => _TaskPageState();
 }
 
-// get imag url from firebase storage
-var url;
-Future<void> downloadURLExample() async {
-  var downloadURL = await FirebaseStorage.instance
-      .ref()
-      .child("TasksImages/love.png")
-      .getDownloadURL();
-  url = downloadURL;
-  print('>>>>>>>>> url : ${url}');
-}
+var urlList = {};
 
 class _TaskPageState extends State<TaskPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    downloadURLExample();
+  Future<void> downloadURLExample(img) async {
+    var downloadURL = await FirebaseStorage.instance
+        .ref()
+        .child("TasksImages/${img}.png")
+        .getDownloadURL();
+    urlList['${img}'] = downloadURL;
   }
 
   //variables
@@ -49,6 +44,7 @@ class _TaskPageState extends State<TaskPage> {
   List _completed = [2];
   bool isDeleted = false;
   var taskList = [];
+  var favList;
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +52,8 @@ class _TaskPageState extends State<TaskPage> {
       key: _scaffoldKey,
       backgroundColor: Colors.white60,
       body: FutureBuilder(
-        future: db.collection('anonymous_users')
-            .where('uid', isEqualTo: widget.Uid)
+        future: db.collection('users')
+            .where("${user?.isAnonymous == true ? 'anon_uid' : 'email'}", isEqualTo: user?.isAnonymous == true ? user?.uid : user?.email)
             .get(),
         builder: (context, snapshot){
           if(snapshot.connectionState == ConnectionState.waiting){
@@ -65,17 +61,26 @@ class _TaskPageState extends State<TaskPage> {
               child: CircularProgressIndicator(),
             );
           }
-          print(snapshot.connectionState);
-          print("snapshot hasData: \n");
-          print((snapshot.data as QuerySnapshot).docs);
-          taskList = (snapshot.data as QuerySnapshot).docs.isEmpty ? [] : ((snapshot.data as QuerySnapshot).docs)[0]["tasks"];
+
+          try{
+            taskList = (snapshot.data as QuerySnapshot).docs.isEmpty ? [] : ((snapshot.data as QuerySnapshot).docs)[0]["tasks"];
+          }catch(e){
+            taskList = [];
+          }
+
+          try{
+            favList = (snapshot.data as QuerySnapshot).docs.isEmpty ? [] : ((snapshot.data as QuerySnapshot).docs)[0]["favTasks"];
+          }catch(e){
+            favList = [];
+          }
+
           print('----------- taskslist from taskhome : ${taskList}');
 
           return Column(
             children: <Widget>[
-              SizedBox(height: 30,),
+              SizedBox(height: 80,),
               Align(
-              alignment: Alignment.topLeft,
+                alignment: Alignment.topLeft,
                 child: Padding(
                   padding: EdgeInsets.only(left: 15),
                   child: Text(
@@ -102,12 +107,63 @@ class _TaskPageState extends State<TaskPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 10,),
-              ListView.builder(
+              SizedBox(height: 4,),
+              taskList.isEmpty
+              ? Padding(
+                padding: const EdgeInsets.only(top: 300),
+                child: Container(
+                  child: Column(
+                    children: [
+                      Text(
+                          'No tasks available',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey[800]
+                        ),
+                      ),
+                      Text(
+                        ' Check-in to get tasks recommended',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey
+                        ),
+                      ),
+                      SizedBox(height: 10,),
+                      SizedBox(
+                        height: 40,
+                        width: 100,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.deepPurpleAccent,
+                              shape: new RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)
+                              )
+                          ),
+                          child: Text(
+                            'Check-in',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                          onPressed: (){
+                            Navigator.push(context, new MaterialPageRoute(
+                                builder: (context) => new HomePage())
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              : ListView.builder(
                 shrinkWrap: true,
                 itemCount: taskList.length,
                 itemBuilder: (context, index){
                   var document = taskList[index];
+                  downloadURLExample(document['title']);
+
                   return Card(
                     margin: EdgeInsets.fromLTRB(15, 15, 15, 0),
                     key: ValueKey(document),
@@ -118,6 +174,7 @@ class _TaskPageState extends State<TaskPage> {
                     elevation: 2,
                     child: GestureDetector(
                       onTap: (){
+                        print('liked or not ? ${favList.indexOf(document['Movement'])}');
                         Navigator.push(context, new MaterialPageRoute(
                             builder: (context) => new TaskDespPage(
                               Uid: widget.Uid,
@@ -126,11 +183,12 @@ class _TaskPageState extends State<TaskPage> {
                               desp: document['desp'],
                               isCompleted: document['isCompleted'],
                               rem: document['rem'],
-                              isFav: document['isFav'],
+                              isFav: favList.indexOf(document['title']) == -1 ? false : true,
                               ref: document['ref'],
-                              url: url,
+                              url: urlList[document['title']],
                             ))
                         );
+                        setState(() {});
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -145,92 +203,101 @@ class _TaskPageState extends State<TaskPage> {
                             value: document['isCompleted'],
                             onChanged: (value) async{
                               // setState(() {
-                                _completed[0] = index;
-                                _value = value!;
-                                if(index == _completed[0]){
-                                  await updateTask(widget.Uid, index, _value, 'isCompleted');
-                                  setState(() {});
-                                  if(_value){
-                                    showDialog(
-                                      context: _scaffoldKey.currentContext!,
-                                      builder: (context) => AlertDialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        title: Column(
-                                          children: [
-                                            Center(
-                                                child: Text(
-                                                    'Journaling your new experience is best way to keep it going. \ngive it a try... ',
-                                                  style: TextStyle(
+                              _completed[0] = index;
+                              _value = value!;
+                              if(index == _completed[0]){
+                                await updateTask(document['title'], index, _value, 'isCompleted');
+                                setState(() {});
+                                if(_value && user?.isAnonymous == false){
+                                  showDialog(
+                                    context: _scaffoldKey.currentContext!,
+                                    builder: (context) => AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      title: Column(
+                                        children: [
+                                          Center(
+                                              child: Text(
+                                                'Journaling your new experience is best way to keep it going. \ngive it a try... ',
+                                                style: TextStyle(
                                                     fontSize: 17,
                                                     color: Colors.grey[800]
-                                                  ),
-                                                )
-                                            ),
-                                            SizedBox(height: 20,),
-                                            // Image.asset('assets/images/great.png'),
-                                            // SizedBox(height: 10,),
-                                            Center(
-                                              child: SizedBox(
-                                                height: 40,
-                                                width: 100,
-                                                child: ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      primary: Colors.deepPurpleAccent,
-                                                      shape: new RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(30)
-                                                      )
-                                                  ),
-                                                  child: Text(
-                                                    'Sure!',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  onPressed: (){
-                                                    Navigator.of(context).pop();
-                                                    Navigator.push(context, new MaterialPageRoute(
-                                                        builder: (context) => new ChooseColor(
-                                                          // Uid: widget.Uid,
-                                                          title: document['title'],
-                                                          content: 'Describe your experience here',
-                                                          url: url,
-                                                        ))
-                                                    );
-                                                  },
                                                 ),
+                                              )
+                                          ),
+                                          SizedBox(height: 20,),
+                                          // Image.asset('assets/images/great.png'),
+                                          // SizedBox(height: 10,),
+                                          Center(
+                                            child: SizedBox(
+                                              height: 40,
+                                              width: 100,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                    primary: Colors.deepPurpleAccent,
+                                                    shape: new RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(30)
+                                                    )
+                                                ),
+                                                child: Text(
+                                                  'Sure!',
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                onPressed: (){
+                                                  Navigator.of(context).pop();
+                                                  Navigator.push(context, new MaterialPageRoute(
+                                                      builder: (context) => new ChooseColor(
+                                                        // Uid: widget.Uid,
+                                                        title: document['title'],
+                                                        content: 'Describe your experience here',
+                                                        url: urlList[document['title']],
+                                                      ))
+                                                  );
+                                                },
                                               ),
                                             ),
-                                            SizedBox(height: 7,),
-                                            Center(
-                                              child: SizedBox(
-                                                height: 40,
-                                                width: 100,
-                                                child: TextButton(
-                                                  child: Text(
-                                                    'Later',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.deepPurpleAccent,
-                                                    ),
+                                          ),
+                                          SizedBox(height: 7,),
+                                          Center(
+                                            child: SizedBox(
+                                              height: 40,
+                                              width: 100,
+                                              child: TextButton(
+                                                child: Text(
+                                                  'Later',
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: Colors.deepPurpleAccent,
                                                   ),
-                                                  onPressed: (){
-                                                    Navigator.of(context).pop();
-                                                  },
                                                 ),
+                                                onPressed: (){
+                                                  Fluttertoast.showToast(
+                                                      msg: "Task is marked as completed",
+                                                      toastLength: Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.CENTER,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor: Colors.black26,
+                                                      textColor: Colors.white,
+                                                      fontSize: 16.0
+                                                  );
+                                                  Navigator.of(context).pop();
+                                                },
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                        // actions: [
-                                        //
-                                        // ],
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  }
+                                      // actions: [
+                                      //
+                                      // ],
+                                    ),
+                                  );
                                 }
+                              }
                               // });
                             },
                           ),
@@ -249,6 +316,7 @@ class _TaskPageState extends State<TaskPage> {
                             child: Text(
                               document['desp'],
                               overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ) : null,
                           trailing: GestureDetector(
@@ -282,34 +350,12 @@ class _TaskPageState extends State<TaskPage> {
                                         });
                                         print('--------- isDeleted : ${isDeleted}');
                                         if(!isDeleted){
-                                          // showDialog(
-                                          //     context: context,
-                                          //     builder: (ctx) =>  AlertDialog(
-                                          //       shape: RoundedRectangleBorder(
-                                          //           borderRadius: BorderRadius.circular(8)
-                                          //       ),
-                                          //       title: Text('Complete the task first!'),
-                                          //       actions: [
-                                          //         TextButton(
-                                          //           child: Text(
-                                          //             'OK',
-                                          //             style: TextStyle(
-                                          //                 color: Colors.grey
-                                          //             ),
-                                          //           ),
-                                          //           onPressed: () {
-                                          //             Navigator.of(context).pop();
-                                          //           },
-                                          //         ),
-                                          //       ],
-                                          //     )
-                                          // );
                                           Fluttertoast.showToast(
                                               msg: "Complete the task first",
                                               toastLength: Toast.LENGTH_SHORT,
                                               gravity: ToastGravity.CENTER,
                                               timeInSecForIosWeb: 1,
-                                              backgroundColor: Colors.red,
+                                              backgroundColor: Colors.black26,
                                               textColor: Colors.white,
                                               fontSize: 16.0
                                           );
@@ -325,6 +371,15 @@ class _TaskPageState extends State<TaskPage> {
                                       ),
                                       onPressed: () {
                                         Navigator.of(context).pop();
+                                        Fluttertoast.showToast(
+                                            msg: "task deleted successfully",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.CENTER,
+                                            timeInSecForIosWeb: 1,
+                                            backgroundColor: Colors.black26,
+                                            textColor: Colors.white,
+                                            fontSize: 16.0
+                                        );
                                       },
                                     ),
                                   ],

@@ -7,68 +7,308 @@ class QuizPage extends StatefulWidget {
   // const QuizPage({Key? key}) : super(key: key);
 
   var Uid;
+  var mood;
   QuizPage({
-    this.Uid
+    this.Uid,
+    required this.mood
   });
   @override
   _QuizPageState createState() => _QuizPageState();
 }
 
+// quiz questions based on mood
+final moodBasedQuestions = const {
+  'great': [
+    {
+      'questionText': 'How often have you had enjoyed small things of your daily life ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had spend enough time for yourself ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had thought about good things happened to you so far ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had found yourself helping others ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+  ],
+  'good': [
+    {
+      'questionText': 'How often have you had experienced overthinking about future situations ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced distraction from focusing on what you currently need to do ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced it hard to release the tension ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had end up having negative thoughts and feeling worried ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had practiced positive affirmations ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+  ],
+  'ok': [
+    {
+      'questionText': 'How often have you had lost trust in yourself or in those around you ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had felt overwhelming and trapped all alone in darkness ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced dwelling on negative thoughts ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced lost of control ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+  ],
+  'bad': [
+    {
+      'questionText': 'How often have you had experienced hard to manage your anger ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had responded certain situations in irrational or unhelpful manner ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had reacted impulsively ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced your mind filled with negative and harsh thoughts ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had tried reflecting on situations making you lose tamper ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had felt everything cluttered around you ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+  ],
+  'tired': [
+    {
+      'questionText': 'How often have you had constantly felt low on energy ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced tension strted building up in your muscles ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had played your favourite playlist ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had experienced life getting monotonous and end up in a rut ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had felt tired and lethargic  ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+    {
+      'questionText': 'How often have you had spend significant time indoors ?',
+      'answers' : [
+        {'text': 'Not at all', 'selected': false},
+        {'text': 'Several days', 'selected': false},
+        {'text': 'More than half the days', 'selected': false},
+        {'text': 'Nearly every day', 'selected': false}
+      ],
+    },
+  ]
+};
+
 class _QuizPageState extends State<QuizPage> {
-  final questions = const [
-    {
-      'questionText': 'How are you feelin ?',
-      'answers' : [
-        {'text': 'Good', 'score': 10, 'selected': false},
-        {'text': 'better', 'score': 15, 'selected': false},
-        {'text': 'best', 'score': 20, 'selected': false},
-        {'text': 'awful', 'score': 5, 'selected': false}
-      ],
-    },
-    {
-      'questionText': 'how many people did you meet ?',
-      'answers' : [
-        {'text': 'a lot', 'score': 10, 'selected': false},
-        {'text': 'few', 'score': 15, 'selected': false},
-        {'text': 'family', 'score': 20, 'selected': false},
-        {'text': 'friend', 'score': 5, 'selected': false}
-      ],
-    },
-    {
-      'questionText': 'was you able to complete todays tasks ?',
-      'answers' : [
-        {'text': 'yepp !!', 'score': 10, 'selected': false},
-        {'text': 'half done', 'score': 15, 'selected': false},
-        {'text': 'only few', 'score': 20, 'selected': false},
-        {'text': 'i wasted time', 'score': 5, 'selected': false}
-      ],
-    },
-    {
-      'questionText': 'loosing hope ?',
-      'answers' : [
-        {'text': 'nope', 'score': 10, 'selected': false},
-        {'text': 'trying really hard', 'score': 15, 'selected': false},
-        {'text': 'yes little', 'score': 20, 'selected': false},
-        {'text': 'already lost it', 'score': 5, 'selected': false}
-      ],
-    },
-  ];
+  // assign quiz questions for current mood
+  late final questions = moodBasedQuestions[widget.mood];
+  // final questions = const [
+  //   {
+  //     'questionText': 'How are you feelin ?',
+  //     'answers' : [
+  //       {'text': 'Good', 'score': 10, 'selected': false},
+  //       {'text': 'better', 'score': 15, 'selected': false},
+  //       {'text': 'best', 'score': 20, 'selected': false},
+  //       {'text': 'awful', 'score': 5, 'selected': false}
+  //     ],
+  //   },
+  //   {
+  //     'questionText': 'how many people did you meet ?',
+  //     'answers' : [
+  //       {'text': 'a lot', 'score': 10, 'selected': false},
+  //       {'text': 'few', 'score': 15, 'selected': false},
+  //       {'text': 'family', 'score': 20, 'selected': false},
+  //       {'text': 'friend', 'score': 5, 'selected': false}
+  //     ],
+  //   },
+  //   {
+  //     'questionText': 'was you able to complete todays tasks ?',
+  //     'answers' : [
+  //       {'text': 'yepp !!', 'score': 10, 'selected': false},
+  //       {'text': 'half done', 'score': 15, 'selected': false},
+  //       {'text': 'only few', 'score': 20, 'selected': false},
+  //       {'text': 'i wasted time', 'score': 5, 'selected': false}
+  //     ],
+  //   },
+  //   {
+  //     'questionText': 'loosing hope ?',
+  //     'answers' : [
+  //       {'text': 'nope', 'score': 10, 'selected': false},
+  //       {'text': 'trying really hard', 'score': 15, 'selected': false},
+  //       {'text': 'yes little', 'score': 20, 'selected': false},
+  //       {'text': 'already lost it', 'score': 5, 'selected': false}
+  //     ],
+  //   },
+  // ];
 
   List _isSelected=[6];
   int _questionIndex = 0;
-  var _totalScore = 0;
   bool _selected = false;
   List<String> text = [];
-  List<int> score = [];
   dynamic _ans;
   int queIndex=0;
 
   void _answerQuestion(){
     setState(() {
-      _ans = questions[_questionIndex]['answers'];
+      _ans = questions?[_questionIndex]['answers'];
       _ans.forEach((s){
         text.add(s['text']);
-        score.add(s['score']);
       });
     });
   }
@@ -97,18 +337,16 @@ class _QuizPageState extends State<QuizPage> {
                 padding: EdgeInsets.only(right: 30, top: 20),
                 child: TextButton(
                   onPressed: () {
-                    if(_questionIndex == 3){
+                    print('question curr index : ${_questionIndex}\n quetion length : ${questions?.length}');
+                    if(_questionIndex + 1 == questions?.length){
                       print('reached limit');
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context)=> QuizEnd(Uid: widget.Uid,)
-                        ),
-                      );
+                      Navigator.of(context).pushAndRemoveUntil(
+                          new MaterialPageRoute(
+                              builder: (context) => new QuizEnd(Uid: widget.Uid,)),
+                              (Route<dynamic> route) => false);
                     } else{
                         setState(() {
-                          _totalScore += score[queIndex];
-                          _questionIndex += _questionIndex==4 ? 0 : 1;
+                          _questionIndex += _questionIndex == questions?.length ? 0 : 1;
                           _answerQuestion();
                         });
                         _isSelected[0]=6;
@@ -147,7 +385,7 @@ class _QuizPageState extends State<QuizPage> {
                         title: Align(
                           alignment: Alignment.center,
                           child: Text(
-                            '${questions[_questionIndex]['questionText'].toString()}',
+                            '${questions?[_questionIndex]['questionText'].toString()}',
                           ),
                         ),
                       ),
@@ -230,7 +468,6 @@ class _QuizPageState extends State<QuizPage> {
                           } else{
                             if(_isSelected[0]!=6){
                               setState(() {
-                                _totalScore += score[queIndex];
                                 _questionIndex += _questionIndex==4 ? 0 : 1;
                                 _answerQuestion();
                               });

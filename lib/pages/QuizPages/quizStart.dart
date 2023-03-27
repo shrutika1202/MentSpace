@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mental_health_app/PageRouting.dart';
 import 'package:mental_health_app/pages/QuizPages/quiz.dart';
 
 import '../../main.dart';
@@ -6,7 +7,7 @@ import '../../main.dart';
 class QuizStart extends StatefulWidget {
   // const QuizStart({Key? key}) : super(key: key);
 
-  String mood ='ok';
+  String mood;
   var Uid;
   QuizStart({
     required this.mood,
@@ -24,7 +25,7 @@ class _QuizStartState extends State<QuizStart> {
     {'good': 'Nice to hear you\'r feeling good'},
     {'ok': 'Glad things are okay.'},
     {'bad': 'Sorry to hear you\'r feeling bad.'},
-    {'awful': 'Sorry to hear you\'r feeling awful'}
+    {'tired': 'You must have worked really hard.'}
   ];
   String respText = '';
 
@@ -54,7 +55,7 @@ class _QuizStartState extends State<QuizStart> {
         Container(
           height: 550,
           child: AppBar(
-            backgroundColor: Colors.deepPurple,
+            backgroundColor: Colors.deepPurpleAccent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(bottomLeft: Radius.circular(60), bottomRight: Radius.circular(60)),
             ),
@@ -84,7 +85,7 @@ class _QuizStartState extends State<QuizStart> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50.0),
                       ),
-                      color: Colors.deepPurple,
+                      color: Colors.deepPurpleAccent,
                       elevation: 0,
                       child: Column(
                         children: [
@@ -104,7 +105,7 @@ class _QuizStartState extends State<QuizStart> {
                           ),
                           SizedBox(height: 30,),
                           Image.asset(
-                            'assets/images/jimin.jpg',
+                            'assets/images/quizStart.png',
                             height: 200,
                             width: 150,
                             fit: BoxFit.cover,
@@ -142,7 +143,7 @@ class _QuizStartState extends State<QuizStart> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context)=> QuizPage(Uid: widget.Uid,)
+                            builder: (context)=> QuizPage(Uid: widget.Uid, mood: widget.mood,)
                         ),
                       );
                     },
@@ -176,7 +177,7 @@ class _QuizStartState extends State<QuizStart> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context)=> MyApp(pageIndex: 0, Uid: widget.Uid,)
+                            builder: (context)=> PageRouting(pageIndex: 0, Uid: widget.Uid,)
                         ),
                       );
                     },

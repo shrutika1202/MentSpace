@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mental_health_app/PageRouting.dart';
 import 'package:mental_health_app/pages/QuizPages/fetchTasks.dart';
 
 import '../../main.dart';
+import '../DiaryPages/chooseColor.dart';
 
 class QuizEnd extends StatefulWidget {
   // const QuizEnd({Key? key}) : super(key: key);
@@ -47,7 +49,7 @@ class _QuizEndState extends State<QuizEnd> {
                 padding: EdgeInsets.only(top: 50),
                 child: CircleAvatar(
                     radius: 100,
-                    child: Icon(Icons.card_giftcard)
+                    child: Image.asset('assets/images/quizEnd.png')
                 ),
               ),
             ],
@@ -68,7 +70,7 @@ class _QuizEndState extends State<QuizEnd> {
                 Container(
                   padding: EdgeInsets.only(top: 30, right: 20, left: 20),
                   child: SizedBox(
-                    height: 200,
+                    height: 240,
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50.0),
@@ -99,7 +101,7 @@ class _QuizEndState extends State<QuizEnd> {
                             padding: EdgeInsets.only(right: 60, left: 60),
                             child: Text(
                               textAlign: TextAlign.center,
-                              'now boost your mood with some activities',
+                              'now boost your mood with some activities\n or try to express your thoughts',
                               style: TextStyle(
                                 fontSize: 15,
                                 color: Colors.grey[300],
@@ -113,42 +115,84 @@ class _QuizEndState extends State<QuizEnd> {
                   ),
                 ),
                 SizedBox(height: 50,),
-                ElevatedButton(
-                    style: ButtonStyle(
-                      elevation: MaterialStateProperty.all(15),
-                      overlayColor: MaterialStateProperty.all(Colors.grey[300]),
-                      backgroundColor: MaterialStateProperty.all(Colors.white),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: Colors.white)
-                          )
-                      ),
-                    ),
-                    onPressed: () {
-                      print('>>>>>>>>>>> Method will call');
-                      fetchTasks(120);
-                      print('>>>>>>>>>>> Method called');
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context)=> MyApp(pageIndex: 1, Uid: widget.Uid,)
-                        ),
-                      );
-                    },
-                    child: Padding(
-                        padding: EdgeInsets.only(top: 10,bottom: 10,right: 20, left: 20),
-                        child: Text(
-                          'Let\'s start',
-                          style: TextStyle(
-                            color: Colors.deepPurple,
-                              letterSpacing: 2,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500
+                Column(
+                  children: [
+                    ElevatedButton(
+                        style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(15),
+                          overlayColor: MaterialStateProperty.all(Colors.grey[300]),
+                          backgroundColor: MaterialStateProperty.all(Colors.white),
+                          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(color: Colors.white)
+                              )
                           ),
+                        ),
+                        onPressed: () {
+                          // print('>>>>>>>>>>> Method will call');
+                          // fetchTasks(120);
+                          // print('>>>>>>>>>>> Method called');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context)=> ChooseColor()
+                            ),
+                          );
+                        },
+                        child: Padding(
+                            padding: EdgeInsets.only(top: 10,bottom: 10,right: 20, left: 20),
+                            child: Text(
+                              'Thought Journal',
+                              style: TextStyle(
+                                  color: Colors.deepPurple,
+                                  letterSpacing: 2,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w500
+                              ),
+                            )
                         )
-                    )
+                    ),
+                    SizedBox(height: 10,),
+                    ElevatedButton(
+                        style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(15),
+                          overlayColor: MaterialStateProperty.all(Colors.grey[300]),
+                          backgroundColor: MaterialStateProperty.all(Colors.white),
+                          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(color: Colors.white)
+                              )
+                          ),
+                        ),
+                        onPressed: () {
+                          // print('>>>>>>>>>>> Method will call');
+                          // fetchTasks(120);
+                          // print('>>>>>>>>>>> Method called');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context)=> PageRouting(pageIndex: 1, Uid: widget.Uid,)
+                            ),
+                          );
+                        },
+                        child: Padding(
+                            padding: EdgeInsets.only(top: 10,bottom: 10,right: 20, left: 20),
+                            child: Text(
+                              'Try Activities',
+                              style: TextStyle(
+                                  color: Colors.deepPurple,
+                                  letterSpacing: 2,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w500
+                              ),
+                            )
+                        )
+                    ),
+                  ],
                 ),
                 SizedBox(height: 30,),
               ],
